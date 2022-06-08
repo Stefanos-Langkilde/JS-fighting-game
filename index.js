@@ -10,15 +10,15 @@ const gravity = 0.7;
 
 class Sprite {
    constructor({ position, velocity, color = "red", offset }) {
-      this.position = position; 
-      this.velocity = velocity; 
-      this.width = 50; 
-      this.height = 150; 
+      this.position = position;
+      this.velocity = velocity;
+      this.width = 50;
+      this.height = 150;
       this.lastKey;
       this.attackBox = {
          position: {
             x: this.position.x,
-            y: this.position.y
+            y: this.position.y,
          },
          offset,
          width: 100,
@@ -33,15 +33,15 @@ class Sprite {
       c.fillRect(this.position.x, this.position.y, 50, this.height);
 
       if (this.isAttacking) {
-         c.fillStyle ='green';
+         c.fillStyle = "green";
          c.fillRect(this.attackBox.position.x, this.attackBox.y, this.attackBox.width, this.attackBox.height);
       }
    }
 
    update() {
       this.draw();
-      this.attackBox.position.x = this.position.x + this.attackBox.offset.x;    
-      this.attackBox.position.y = this.position.y;     
+      this.attackBox.position.x = this.position.x + this.attackBox.offset.x;
+      this.attackBox.position.y = this.position.y;
 
       this.position.x += this.velocity.x;
       this.position.y += this.velocity.y;
@@ -70,7 +70,7 @@ const player = new Sprite({
    },
    offset: {
       x: 0,
-      y: 0
+      y: 0,
    },
 });
 
@@ -85,9 +85,9 @@ const enemy = new Sprite({
    },
    color: "blue",
    offset: {
-      x:-50,
-      y:0
-   }
+      x: -50,
+      y: 0,
+   },
 });
 
 const keys = {
@@ -106,14 +106,42 @@ const keys = {
    },
 };
 
-function rectangularCollision({rectangle1, rectangle2}) {
-   return(
+function rectangularCollision({ rectangle1, rectangle2 }) {
+   return (
       rectangle1.attackBox.position.x + rectangle1.attackBox.width >= rectangle2.position.x &&
       rectangle1.attackBox.position.x <= rectangle2.position.x + rectangle2.width &&
       rectangle1.attackBox.position.y + rectangle1.attackBox.height >= rectangle2.position.y &&
       rectangle1.attackBox.position.y <= rectangle2.position.y + rectangle2.height
    );
 }
+
+function determineWinner({ player, enemy, timerId }) {
+   clearTimeout(timerId);
+   document.querySelector("#displayText").style.display = "flex";
+   if (player.health === enemy.health) {
+      document.querySelector("#displayText").innerHTML = "Tie";
+   } else if (player.health > enemy.health) {
+      document.querySelector("#displayText").innerHTML = "Player 1 Wins";
+   } else if (player.health < enemy.health) {
+      document.querySelector("#displayText").innerHTML = "Player 2 Wins";
+   }
+}
+
+let timer = 60;
+let timerId
+function decreaseTimer() {
+   if (timer > 0) {
+      timerId = setTimeout(decreaseTimer, 1000);
+      timer--;
+      document.querySelector("#timer").innerHTML = timer;
+   }
+
+   if (timer === 0) {
+      determineWinner({ player, enemy, timerId });
+   }
+}
+
+decreaseTimer();
 
 function animate() {
    window.requestAnimationFrame(animate);
@@ -143,25 +171,30 @@ function animate() {
    if (
       rectangularCollision({
          rectangle1: player,
-         rectangle2: enemy
-      })&&
+         rectangle2: enemy,
+      }) &&
       player.isAttacking
    ) {
       player.isAttacking = false;
       enemy.health -= 20;
-      document.querySelector('#enemyHealth').style.width = enemy.health + '%';
+      document.querySelector("#enemyHealth").style.width = enemy.health + "%";
    }
 
    if (
       rectangularCollision({
          rectangle1: enemy,
-         rectangle2: player
-      })&&
+         rectangle2: player,
+      }) &&
       enemy.isAttacking
    ) {
       enemy.isAttacking = false;
       player.health -= 20;
-      document.querySelector('#playerHealth').style.width = player.health + '%';
+      document.querySelector("#playerHealth").style.width = player.health + "%";
+   }
+
+   // end game based on health
+   if (enemy.health <= 0 || player.health <= 0) {
+      determineWinner({ player, enemy, timerId });
    }
 }
 
@@ -199,7 +232,7 @@ window.addEventListener("keydown", (event) => {
          break;
       case "ArrowDown":
          enemy.isAttacking = true;
-         break
+         break;
    }
 });
 
@@ -223,4 +256,4 @@ window.addEventListener("keyup", (event) => {
    }
 });
 
-//video 1:34:30
+//video 1:51:35
